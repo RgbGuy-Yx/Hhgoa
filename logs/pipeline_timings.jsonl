@@ -1,0 +1,23 @@
+{"stage": "generation", "question": "hey, how's it going?", "start_ts": 1786982369.0080118, "duration_ms": 2940.7200000023295, "used_retrieval": false, "num_tool_calls": 0}
+{"stage": "retrieval", "query": "submission deadline", "start_ts": 1786982374.1955926, "duration_ms": 3402.4745999995503, "num_results": 3, "num_kept": 3, "best_distance": 0.4384715259075165}
+{"stage": "generation", "question": "When is the submission deadline?", "start_ts": 1786982373.3687704, "duration_ms": 5351.206299998012, "used_retrieval": true, "num_tool_calls": 1}
+{"stage": "retrieval", "query": "prize money for winning Hacker House Goa 2026", "start_ts": 1786982380.457294, "duration_ms": 714.6180000017921, "num_results": 3, "num_kept": 3, "best_distance": 0.3643443286418915}
+{"stage": "retrieval", "query": "prize money for winning Hacker House Goa 2026", "start_ts": 1786982381.8457534, "duration_ms": 435.63069999800064, "num_results": 3, "num_kept": 3, "best_distance": 0.3643443286418915}
+{"stage": "retrieval", "query": "prize money for winners", "start_ts": 1786982383.0214238, "duration_ms": 388.9398999999685, "num_results": 3, "num_kept": 3, "best_distance": 0.6021410226821899}
+{"stage": "generation", "question": "What's the prize money for winning?", "start_ts": 1786982379.7891066, "duration_ms": 4632.005800001934, "used_retrieval": true, "num_tool_calls": 3}
+{"stage": "retrieval", "query": "submission deadline", "start_ts": 1786982917.517156, "duration_ms": 7603.012699997635, "num_results": 3, "num_kept": 3, "best_distance": 0.4384715259075165}
+{"stage": "generation", "question": "When is the submission deadline?", "start_ts": 1786982915.6815777, "duration_ms": 10515.990200001397, "used_retrieval": true, "num_tool_calls": 1}
+{"stage": "generation", "question": "hey", "start_ts": 1786983003.9002523, "duration_ms": 1337.8436000020884, "used_retrieval": false, "num_tool_calls": 0}
+{"stage": "generation", "question": "hey, how's it going?", "start_ts": 1786983175.114825, "duration_ms": 3769.0731000002415, "used_retrieval": false, "num_tool_calls": 0}
+{"stage": "retrieval", "query": "submission deadline", "start_ts": 1786983181.5355372, "duration_ms": 15946.131500000774, "num_results": 3, "num_kept": 3, "best_distance": 0.4384715259075165}
+{"stage": "generation", "question": "When is the submission deadline?", "start_ts": 1786983180.7767913, "duration_ms": 17786.20029999729, "used_retrieval": true, "num_tool_calls": 1}
+{"stage": "retrieval", "query": "prize money for winning Hacker House Goa 2026", "start_ts": 1786983200.1630087, "duration_ms": 365.84640000000945, "num_results": 3, "num_kept": 3, "best_distance": 0.3643443286418915}
+{"stage": "retrieval", "query": "prize money Hacker House Goa 2026", "start_ts": 1786983203.4121826, "duration_ms": 597.879599998123, "num_results": 3, "num_kept": 3, "best_distance": 0.33129364252090454}
+{"stage": "generation", "question": "What's the prize money for winning?", "start_ts": 1786983199.5228612, "duration_ms": 5850.935399997979, "used_retrieval": true, "num_tool_calls": 2}
+{"stage": "generation", "question": "hey", "start_ts": 1786983218.7954614, "duration_ms": 886.215299997275, "used_retrieval": false, "num_tool_calls": 0}
+{"stage": "generation", "question": "hey", "start_ts": 1786983334.8537073, "duration_ms": 2431.373999999778, "used_retrieval": false, "num_tool_calls": 0}
+{"stage": "generation", "question": "hey", "start_ts": 1786983482.9623096, "duration_ms": 1435.947000001761, "used_retrieval": false, "num_tool_calls": 0}
+{"stage": "retrieval", "query": "timings of Hacker House Goa 2026", "start_ts": 1786983485.346099, "duration_ms": 12589.911800001573, "num_results": 3, "num_kept": 3, "best_distance": 0.2579100728034973}
+{"stage": "retrieval", "query": "daily schedule or timings for Hacker House Goa 2026", "start_ts": 1786983498.9789371, "duration_ms": 375.64999999813153, "num_results": 3, "num_kept": 3, "best_distance": 0.2776584327220917}
+{"stage": "generation", "question": "what is the timings of hhgoa", "start_ts": 1786983482.925642, "duration_ms": 17385.37020000149, "used_retrieval": true, "num_tool_calls": 2}
+{"stage": "generation", "question": "hey", "start_ts": 1786983518.209437, "duration_ms": 1069.7486000026402, "used_retrieval": false, "num_tool_calls": 0}

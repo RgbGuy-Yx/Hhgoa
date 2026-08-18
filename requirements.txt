@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+python-multipart
+python-dotenv
+chromadb
+langchain
+langchain-classic
+langchain-chroma
+langchain-mistralai
+sarvamai

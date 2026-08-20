@@ -21,3 +21,20 @@
 {"stage": "retrieval", "query": "daily schedule or timings for Hacker House Goa 2026", "start_ts": 1786983498.9789371, "duration_ms": 375.64999999813153, "num_results": 3, "num_kept": 3, "best_distance": 0.2776584327220917}
 {"stage": "generation", "question": "what is the timings of hhgoa", "start_ts": 1786983482.925642, "duration_ms": 17385.37020000149, "used_retrieval": true, "num_tool_calls": 2}
 {"stage": "generation", "question": "hey", "start_ts": 1786983518.209437, "duration_ms": 1069.7486000026402, "used_retrieval": false, "num_tool_calls": 0}
+{"stage": "generation", "question": "Who is Yuvraj Singh Chauhan?", "start_ts": 1787077116.7411017, "duration_ms": 1206.4878000019235, "used_retrieval": false, "num_tool_calls": 0}
+{"stage": "retrieval", "query": "location of Hacker House Goa 2026", "start_ts": 1787077222.8682969, "duration_ms": 3573.451299998851, "num_results": 3, "num_kept": 3, "best_distance": 0.25491997599601746}
+{"stage": "generation", "question": "Where is Hacker House event being organized?", "start_ts": 1787077221.8546405, "duration_ms": 5674.029400004656, "used_retrieval": true, "num_tool_calls": 1}
+{"stage": "retrieval", "query": "yuvraj singh chauhan", "start_ts": 1787077299.842416, "duration_ms": 3414.6754999965196, "num_results": 3, "num_kept": 3, "best_distance": 0.6331602334976196}
+{"stage": "retrieval", "query": "prize money", "start_ts": 1787077303.2586675, "duration_ms": 327.0957000058843, "num_results": 3, "num_kept": 3, "best_distance": 0.669846773147583}
+{"stage": "generation", "question": "Who is yuvraj singh chauhan and what is the prize money of hh goa", "start_ts": 1787077298.938906, "duration_ms": 5711.809100001119, "used_retrieval": true, "num_tool_calls": 2}
+{"stage": "retrieval", "query": "prize money", "start_ts": 1787077345.4541645, "duration_ms": 3245.10530000407, "num_results": 3, "num_kept": 3, "best_distance": 0.669846773147583}
+{"stage": "generation", "question": "what is the prize money of hh goa", "start_ts": 1787077344.4846067, "duration_ms": 5157.007499998144, "used_retrieval": true, "num_tool_calls": 1}
+{"stage": "generation", "question": "Okay", "start_ts": 1787237356.7858706, "duration_ms": 1255.5895000114106, "used_retrieval": false, "num_tool_calls": 0}
+{"stage": "retrieval", "query": "What is Hacker House Goa 2026?", "start_ts": 1787238269.0434716, "duration_ms": 4827.040300006047, "num_results": 3, "num_kept": 3, "best_distance": 0.17101886868476868}
+{"stage": "generation", "question": "Hey Goa, what is the Hacker House event?", "start_ts": 1787238267.3673472, "duration_ms": 8437.006700027268, "used_retrieval": true, "num_tool_calls": 1}
+{"stage": "retrieval", "query": "hackathon dates", "start_ts": 1787238354.4323902, "duration_ms": 390.73630000348203, "num_results": 3, "num_kept": 3, "best_distance": 0.5037326812744141}
+{"stage": "generation", "question": "What are the dates of the hackathon?", "start_ts": 1787238353.4333377, "duration_ms": 2495.432700001402, "used_retrieval": true, "num_tool_calls": 1}
+{"stage": "generation", "question": "Okay, so", "start_ts": 1787238525.7546751, "duration_ms": 716.5020999964327, "used_retrieval": false, "num_tool_calls": 0}
+{"stage": "generation", "question": "हैकर हाउस इवेंट के बारे में तुम क्या जानते हो?", "start_ts": 1787241208.900908, "duration_ms": 2805.3069999999707, "used_retrieval": false, "num_source_docs": 0}
+{"stage": "retrieval", "query": "Hacker House Goa 2026 dates", "start_ts": 1787241493.6255627, "duration_ms": 5017.809800000123, "num_results": 3, "num_kept": 3, "best_distance": 0.2764361500740051}
+{"stage": "generation", "question": "हैकर हाउस इवेंट के डेट्स कब हैं?", "start_ts": 1787241492.9441783, "duration_ms": 7547.879400000056, "used_retrieval": true, "num_source_docs": 2}

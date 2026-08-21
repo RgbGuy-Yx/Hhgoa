@@ -2,7 +2,7 @@
 
 import { useRef, useState, useCallback, useEffect } from "react";
 
-// ─── types ────────────────────────────────────────────────────────────────────
+/* ─── Types ──────────────────────────────────────────────────────────────── */
 
 interface AgentResponse {
   transcript: string;
@@ -20,7 +20,6 @@ interface Message {
   role: "user" | "assistant";
   text: string;
   source_docs?: string[];
-  used_retrieval?: boolean;
   is_refusal?: boolean;
   audio_b64?: string | null;
   guardrail_triggered?: boolean;
@@ -28,571 +27,593 @@ interface Message {
 }
 
 type RecordingState = "idle" | "recording" | "processing";
-type BackendStatus = "checking" | "up" | "down";
+type BackendStatus  = "checking" | "up" | "down";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
 let msgId = 0;
 const nextId = () => ++msgId;
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
-
 function friendlyError(err: unknown): string {
-  const msg = err instanceof Error ? err.message : String(err);
-  if (
-    msg.toLowerCase().includes("failed to fetch") ||
-    msg.toLowerCase().includes("networkerror") ||
-    msg.toLowerCase().includes("load failed")
-  ) {
-    return (
-      "Cannot reach the backend.\n\n" +
-      "Start it with:\n" +
-      "python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000"
-    );
-  }
-  if (msg.includes("413")) return "Audio file too large. Try a shorter recording.";
-  if (msg.includes("400")) return "Bad request — check your input and try again.";
-  if (msg.includes("502") || msg.includes("503"))
-    return "Backend is temporarily unavailable. Please try again in a moment.";
-  return `Something went wrong: ${msg}`;
+  const m = err instanceof Error ? err.message : String(err);
+  if (m.toLowerCase().includes("failed to fetch") || m.toLowerCase().includes("networkerror") || m.toLowerCase().includes("load failed"))
+    return "Cannot reach the backend.\n\nStart it with:\npython -m uvicorn main:app --reload --host 0.0.0.0 --port 8000";
+  if (m.includes("413")) return "Audio file too large.";
+  if (m.includes("400")) return "Bad request — check your input.";
+  return `Something went wrong: ${m}`;
 }
 
-// ─── global audio player singleton ───────────────────────────────────────────
-// Tracks the one Audio instance that may be playing at any time.
-// Stopping it before playing a new one prevents overlapping voices.
+/* ─── Audio player ───────────────────────────────────────────────────────── */
 
-type AudioListener = (playing: boolean) => void;
-
-const audioPlayer = (() => {
-  let current: HTMLAudioElement | null = null;
-  const listeners = new Set<AudioListener>();
-
-  function notify(playing: boolean) {
-    listeners.forEach((fn) => fn(playing));
-  }
-
+type AL = (v: boolean) => void;
+const player = (() => {
+  let cur: HTMLAudioElement | null = null;
+  const ls = new Set<AL>();
+  const emit = (v: boolean) => ls.forEach(f => f(v));
   return {
     play(b64: string) {
-      // stop whatever is currently playing
-      if (current) {
-        current.pause();
-        current.currentTime = 0;
-        current = null;
-        notify(false);
-      }
-      const audio = new Audio(`data:audio/wav;base64,${b64}`);
-      current = audio;
-      notify(true);
-      audio.onended = () => {
-        current = null;
-        notify(false);
-      };
-      audio.onerror = () => {
-        current = null;
-        notify(false);
-      };
-      audio.play().catch(() => {
-        current = null;
-        notify(false);
-      });
+      cur?.pause();
+      cur = new Audio(`data:audio/wav;base64,${b64}`);
+      emit(true);
+      cur.onended = cur.onerror = () => { cur = null; emit(false); };
+      cur.play().catch(() => { cur = null; emit(false); });
     },
-    stop() {
-      if (current) {
-        current.pause();
-        current.currentTime = 0;
-        current = null;
-        notify(false);
-      }
-    },
-    isPlaying() {
-      return current !== null;
-    },
-    subscribe(fn: AudioListener) {
-      listeners.add(fn);
-      return () => listeners.delete(fn);
-    },
+    stop() { cur?.pause(); cur = null; emit(false); },
+    subscribe(fn: AL) { ls.add(fn); return () => { ls.delete(fn); }; },
   };
 })();
 
-// ─── sub-components ───────────────────────────────────────────────────────────
+/* ─── Data ───────────────────────────────────────────────────────────────── */
 
-function BackendBadge({ status }: { status: BackendStatus }) {
-  if (status === "checking") {
-    return (
-      <div className="flex items-center gap-1.5">
-        <span className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse" />
-        <span className="text-xs text-zinc-400">connecting…</span>
-      </div>
-    );
-  }
-  if (status === "up") {
-    return (
-      <div className="flex items-center gap-1.5">
-        <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
-        <span className="text-xs text-zinc-500 dark:text-zinc-400">backend live</span>
-      </div>
-    );
-  }
-  return (
-    <div className="flex items-center gap-1.5">
-      <span className="h-2 w-2 rounded-full bg-red-500" />
-      <span className="text-xs text-red-500 dark:text-red-400">backend offline</span>
-    </div>
-  );
-}
+const CHIPS = [
+  { label: "Dates & Schedule",   icon: "📅" },
+  { label: "Rules & Guidelines", icon: "📋" },
+  { label: "Prizes & Rewards",   icon: "🏆" },
+  { label: "Tasks & Challenges", icon: "⚡" },
+  { label: "Just say hi",        icon: "👋" },
+];
 
-function SourceBadges({ docs }: { docs: string[] }) {
-  if (!docs.length) return null;
-  return (
-    <div className="mt-2 flex flex-wrap gap-1">
-      {docs.map((d) => (
-        <span
-          key={d}
-          className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300"
-        >
-          {d}
-        </span>
-      ))}
-    </div>
-  );
-}
+/* ─── Design tokens ──────────────────────────────────────────────────────── */
+/* Resend-inspired dark material palette */
+const R = {
+  bg:          "#000000",   /* true black page base              */
+  surf0:       "#0A0A0A",   /* faintest surface lift             */
+  surf1:       "#111111",   /* card / control surface            */
+  surf2:       "#161616",   /* elevated / hover                  */
+  surf3:       "#1E1E1E",   /* highest elevation                 */
+  border0:     "#1A1A1A",   /* subtle divider                    */
+  border1:     "#262626",   /* standard border                   */
+  border2:     "#333333",   /* prominent border                  */
+  text0:       "#FFFFFF",   /* primary                           */
+  text1:       "#A1A1A1",   /* secondary                         */
+  text2:       "#737373",   /* muted                             */
+  text3:       "#525252",   /* faint                             */
+  green:       "#22C55E",   /* brand accent — solid, no glow     */
+  greenDim:    "#16A34A",   /* darker green for larger text      */
+  red:         "#EF4444",
+  redSurf:     "#1A0A0A",
+  amber:       "#F59E0B",
+} as const;
+
+/* ─── Icons ──────────────────────────────────────────────────────────────── */
+
+const IcoMic = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+    <path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/>
+  </svg>
+);
+const IcoSend = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="22" y1="2" x2="11" y2="13"/>
+    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+  </svg>
+);
+const IcoBack = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M15 18l-6-6 6-6"/>
+  </svg>
+);
+const IcoVol = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+    <path d="M15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14"/>
+  </svg>
+);
+const IcoMute = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+    <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+  </svg>
+);
+const IcoPlay = () => (
+  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+);
+const IcoStop = () => (
+  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+);
+
+/* ─── Sub-components ─────────────────────────────────────────────────────── */
 
 function PlayButton({ b64 }: { b64: string }) {
-  // Track whether THIS message's audio is currently playing
-  const [playing, setPlaying] = useState(false);
-
+  const [on, setOn] = useState(false);
   useEffect(() => {
-    // Subscribe to global player state changes
-    const unsub = audioPlayer.subscribe((isPlaying) => {
-      // If something else started playing, we're no longer "playing"
-      // We rely on the play/stop calls below to set our own state correctly,
-      // but if another message's button starts audio we need to reset too.
-      if (!isPlaying) setPlaying(false);
-    });
-    return unsub;
+    return player.subscribe(v => { if (!v) setOn(false); });
   }, []);
-
-  const handleClick = () => {
-    if (playing) {
-      audioPlayer.stop();
-      setPlaying(false);
-    } else {
-      // Stop any other playing audio first
-      audioPlayer.play(b64);
-      setPlaying(true);
-    }
-  };
-
   return (
     <button
-      onClick={handleClick}
-      aria-label={playing ? "Stop audio" : "Play voice response"}
-      className={`mt-2 flex items-center gap-1.5 text-xs transition ${
-        playing
-          ? "text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-          : "text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-200"
-      }`}
+      onClick={() => on ? (player.stop(), setOn(false)) : (player.play(b64), setOn(true))}
+      style={{
+        display: "inline-flex", alignItems: "center", gap: 6,
+        marginTop: 10, padding: "4px 10px",
+        fontSize: 12, fontWeight: 450,
+        color: on ? R.red : R.text2,
+        background: on ? R.redSurf : R.surf1,
+        border: `1px solid ${on ? "#3f1010" : R.border1}`,
+        borderRadius: 6, cursor: "pointer", fontFamily: "inherit",
+        transition: "all 160ms",
+      }}
     >
-      {playing ? (
-        <>
-          <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
-            <rect x="6" y="6" width="12" height="12" rx="1" />
-          </svg>
-          Stop
-        </>
-      ) : (
-        <>
-          <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M8 5v14l11-7z" />
-          </svg>
-          Play voice response
-        </>
-      )}
+      {on ? <IcoStop/> : <IcoPlay/>}{on ? "Stop" : "Play response"}
     </button>
   );
 }
 
-function ChatBubble({ msg }: { msg: Message }) {
-  const isUser = msg.role === "user";
+function Bubble({ msg }: { msg: Message }) {
+  const me = msg.role === "user";
   return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
-      <div
-        className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
-          isUser
-            ? "rounded-br-sm bg-indigo-600 text-white"
-            : msg.is_refusal
-            ? "rounded-bl-sm border border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200"
-            : "rounded-bl-sm bg-white text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100"
-        }`}
-      >
-        <p className="whitespace-pre-wrap">{msg.text}</p>
-        {!isUser && (
-          <>
-            <SourceBadges docs={msg.source_docs ?? []} />
-            {msg.guardrail_triggered && msg.guardrail_reason && (
-              <p className="mt-1.5 text-xs text-amber-600 dark:text-amber-400">
-                ⚠ guardrail: {msg.guardrail_reason}
-              </p>
-            )}
-            {msg.audio_b64 && <PlayButton b64={msg.audio_b64} />}
-          </>
+    <div style={{ display: "flex", justifyContent: me ? "flex-end" : "flex-start" }}>
+      <div style={{
+        maxWidth: "72%", padding: "11px 15px",
+        borderRadius: me ? "12px 12px 3px 12px" : "12px 12px 12px 3px",
+        fontSize: 14, lineHeight: 1.65,
+        background: me ? R.surf3 : msg.is_refusal ? R.redSurf : R.surf1,
+        color: me ? R.text0 : msg.is_refusal ? R.red : R.text1,
+        border: `1px solid ${me ? R.border2 : msg.is_refusal ? "#3f1010" : R.border1}`,
+      }}>
+        <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{msg.text}</p>
+        {!me && msg.audio_b64 && <PlayButton b64={msg.audio_b64}/>}
+        {!me && msg.guardrail_triggered && msg.guardrail_reason && (
+          <p style={{ margin: "6px 0 0", fontSize: 12, color: R.amber }}>⚠ {msg.guardrail_reason}</p>
         )}
       </div>
     </div>
   );
 }
 
-function TypingIndicator() {
+function TypingDots() {
   return (
-    <div className="flex justify-start">
-      <div className="rounded-2xl rounded-bl-sm bg-white px-4 py-3 shadow-sm dark:bg-zinc-800">
-        <div className="flex gap-1.5 items-center h-4">
-          {[0, 1, 2].map((i) => (
-            <span
-              key={i}
-              className="h-2 w-2 rounded-full bg-zinc-400 animate-bounce dark:bg-zinc-500"
-              style={{ animationDelay: `${i * 0.15}s` }}
-            />
-          ))}
-        </div>
+    <div style={{ display: "flex" }}>
+      <div style={{
+        display: "flex", alignItems: "center", gap: 5,
+        padding: "12px 15px",
+        borderRadius: "12px 12px 12px 3px",
+        background: R.surf1, border: `1px solid ${R.border1}`,
+      }}>
+        {[0,1,2].map(i => (
+          <span key={i} style={{
+            width: 5, height: 5, borderRadius: "50%", background: R.text3,
+            display: "inline-block",
+            animation: "hhDot 1.2s ease-in-out infinite",
+            animationDelay: `${i*0.18}s`,
+          }}/>
+        ))}
       </div>
     </div>
   );
 }
 
-// ─── main page ────────────────────────────────────────────────────────────────
+/* ─── Main ───────────────────────────────────────────────────────────────── */
 
 export default function Home() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: nextId(),
-      role: "assistant",
-      text: "Hey! I'm your Hacker House Goa 2026 assistant.\nAsk me anything — dates, tasks, rules, schedule, prizes — or just say hi 👋\n\nType below or tap the mic to speak in any Indian language.",
-    },
-  ]);
-  const [input, setInput] = useState("");
+  const [messages,  setMessages ] = useState<Message[]>([]);
+  const [input,     setInput    ] = useState("");
   const [recording, setRecording] = useState<RecordingState>("idle");
-  const [loading, setLoading] = useState(false);
-  const [autoplay, setAutoplay] = useState(true);
-  const [backendStatus, setBackendStatus] = useState<BackendStatus>("checking");
-  const [audioPlaying, setAudioPlaying] = useState(false);
+  const [loading,   setLoading  ] = useState(false);
+  const [autoplay,  setAutoplay ] = useState(true);
+  const [backend,   setBackend  ] = useState<BackendStatus>("checking");
+  const [chatMode,  setChatMode ] = useState(false);
+  const [focused,   setFocused  ] = useState(false);
 
-  // Keep audioPlaying in sync with the global player
-  useEffect(() => {
-    const unsub = audioPlayer.subscribe(setAudioPlaying);
-    return unsub;
-  }, []);
-
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const mediaRef  = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef  = useRef<HTMLTextAreaElement>(null);
 
-  // ── health-check on mount + every 15 s ─────────────────────────────────────
+  /* health-check */
   useEffect(() => {
-    let cancelled = false;
-    async function ping() {
+    let dead = false;
+    const ping = async () => {
       try {
-        const res = await fetch(`${API_BASE}/health`, {
-          signal: AbortSignal.timeout(4000),
-        });
-        if (!cancelled) setBackendStatus(res.ok ? "up" : "down");
-      } catch {
-        if (!cancelled) setBackendStatus("down");
-      }
-    }
+        const r = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(4000) });
+        if (!dead) setBackend(r.ok ? "up" : "down");
+      } catch { if (!dead) setBackend("down"); }
+    };
     ping();
     const id = setInterval(ping, 15_000);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
+    return () => { dead = true; clearInterval(id); };
   }, []);
 
-  const scrollBottom = useCallback(() => {
-    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
-  }, []);
+  const scrollEnd  = useCallback(() => setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 50), []);
+  const pushMsg    = useCallback((m: Omit<Message,"id">) => { setMessages(p => [...p,{...m,id:nextId()}]); scrollEnd(); }, [scrollEnd]);
+  const onResponse = useCallback((d: AgentResponse) => {
+    pushMsg({ role:"assistant", text:d.answer, is_refusal:d.is_refusal, audio_b64:d.audio_b64, guardrail_triggered:d.guardrail_triggered, guardrail_reason:d.guardrail_reason });
+    if (autoplay && d.audio_b64) player.play(d.audio_b64);
+  }, [pushMsg, autoplay]);
 
-  const pushMessage = useCallback(
-    (msg: Omit<Message, "id">) => {
-      setMessages((prev) => [...prev, { ...msg, id: nextId() }]);
-      scrollBottom();
-    },
-    [scrollBottom]
-  );
-
-  const handleResponse = useCallback(
-    (data: AgentResponse) => {
-      pushMessage({
-        role: "assistant",
-        text: data.answer,
-        source_docs: data.source_docs,
-        used_retrieval: data.used_retrieval,
-        is_refusal: data.is_refusal,
-        audio_b64: data.audio_b64,
-        guardrail_triggered: data.guardrail_triggered,
-        guardrail_reason: data.guardrail_reason,
-      });
-      if (autoplay && data.audio_b64) {
-        audioPlayer.play(data.audio_b64);
-      }
-    },
-    [pushMessage, autoplay]
-  );
-
-  // ── text submit ─────────────────────────────────────────────────────────────
-  const handleTextSubmit = useCallback(async () => {
+  const sendText = useCallback(async () => {
     const q = input.trim();
     if (!q || loading) return;
-
-    setInput("");
-    pushMessage({ role: "user", text: q });
-    setLoading(true);
-
+    setChatMode(true); setInput(""); pushMsg({ role:"user", text:q }); setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/ask-text`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: q, tts: true }),
-      });
-      if (!res.ok) throw new Error(`${res.status}`);
-      const data: AgentResponse = await res.json();
-      handleResponse(data);
-      setBackendStatus("up");
-    } catch (err) {
-      if ((err instanceof Error) && err.message.toLowerCase().includes("failed to fetch")) {
-        setBackendStatus("down");
-      }
-      pushMessage({ role: "assistant", text: friendlyError(err), is_refusal: true });
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }, [input, loading, pushMessage, handleResponse]);
+      const r = await fetch(`${API_BASE}/ask-text`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({question:q,tts:true}) });
+      if (!r.ok) throw new Error(`${r.status}`);
+      onResponse(await r.json()); setBackend("up");
+    } catch(e) {
+      if (e instanceof Error && e.message.toLowerCase().includes("failed to fetch")) setBackend("down");
+      pushMsg({ role:"assistant", text:friendlyError(e), is_refusal:true });
+    } finally { setLoading(false); }
+  }, [input, loading, pushMsg, onResponse]);
 
-  // ── voice recording ─────────────────────────────────────────────────────────
-  const startRecording = useCallback(async () => {
+  const startRec = useCallback(async () => {
     if (recording !== "idle") return;
-
-    if (backendStatus === "down") {
-      pushMessage({
-        role: "assistant",
-        text: friendlyError(new Error("Failed to fetch")),
-        is_refusal: true,
-      });
-      return;
-    }
-
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-        ? "audio/webm;codecs=opus"
-        : "audio/webm";
-      const mr = new MediaRecorder(stream, { mimeType });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+      const mime   = MediaRecorder.isTypeSupported("audio/webm;codecs=opus") ? "audio/webm;codecs=opus" : "audio/webm";
+      const mr     = new MediaRecorder(stream, { mimeType:mime });
       chunksRef.current = [];
-      mr.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
-      };
+      mr.ondataavailable = e => { if (e.data.size>0) chunksRef.current.push(e.data); };
       mr.onstop = async () => {
-        stream.getTracks().forEach((t) => t.stop());
-        const blob = new Blob(chunksRef.current, { type: mimeType });
-        setRecording("processing");
-        setLoading(true);
-
-        const form = new FormData();
-        form.append("audio", blob, "recording.webm");
-
+        stream.getTracks().forEach(t => t.stop());
+        setRecording("processing"); setLoading(true); setChatMode(true);
+        const fd = new FormData();
+        fd.append("audio", new Blob(chunksRef.current,{type:mime}), "recording.webm");
         try {
-          const res = await fetch(`${API_BASE}/ask?tts=true`, {
-            method: "POST",
-            body: form,
-          });
-          if (!res.ok) throw new Error(`${res.status}`);
-          const data: AgentResponse = await res.json();
-          pushMessage({ role: "user", text: `🎤 ${data.transcript}` });
-          handleResponse(data);
-          setBackendStatus("up");
-        } catch (err) {
-          if ((err instanceof Error) && err.message.toLowerCase().includes("failed to fetch")) {
-            setBackendStatus("down");
-          }
-          pushMessage({ role: "assistant", text: friendlyError(err), is_refusal: true });
-          console.error(err);
-        } finally {
-          setLoading(false);
-          setRecording("idle");
-        }
+          const r = await fetch(`${API_BASE}/ask?tts=true`, { method:"POST", body:fd });
+          if (!r.ok) throw new Error(`${r.status}`);
+          const d: AgentResponse = await r.json();
+          pushMsg({ role:"user", text:`🎤 ${d.transcript}` });
+          onResponse(d); setBackend("up");
+        } catch(e) {
+          if (e instanceof Error && e.message.toLowerCase().includes("failed to fetch")) setBackend("down");
+          pushMsg({ role:"assistant", text:friendlyError(e), is_refusal:true });
+        } finally { setLoading(false); setRecording("idle"); }
       };
+      mediaRef.current = mr; mr.start(); setRecording("recording");
+    } catch { alert("Microphone access denied."); }
+  }, [recording, pushMsg, onResponse]);
 
-      mediaRecorderRef.current = mr;
-      mr.start();
-      setRecording("recording");
-    } catch {
-      alert("Microphone access denied. Please allow mic access and try again.");
-    }
-  }, [recording, backendStatus, pushMessage, handleResponse]);
+  const stopRec  = useCallback(() => mediaRef.current?.stop(), []);
+  const onKey    = (e: React.KeyboardEvent<HTMLTextAreaElement>) => { if (e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendText();} };
 
-  const stopRecording = useCallback(() => {
-    mediaRecorderRef.current?.stop();
-  }, []);
+  const canSend  = input.trim().length > 0 && !loading && recording === "idle";
+  const micBusy  = loading && recording === "idle";
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleTextSubmit();
-    }
-  };
+  /* ── Input bar ─────────────────────────────────────────────────────────── */
+  const InputBar = ({ ph }: { ph: string }) => (
+    <div style={{
+      display: "flex", alignItems: "center", gap: 6,
+      background: R.surf0,
+      border: `1px solid ${focused ? R.border2 : R.border1}`,
+      borderRadius: 12,
+      padding: "10px 10px 10px 18px",
+      /* very subtle inner highlight — material feel */
+      backgroundImage: "linear-gradient(180deg,rgba(255,255,255,0.02) 0%,transparent 100%)",
+      boxShadow: focused ? `0 0 0 1px ${R.border2}` : "none",
+      transition: "border-color 180ms, box-shadow 180ms",
+      width: "100%", boxSizing: "border-box" as const,
+    }}>
+      <textarea
+        ref={inputRef}
+        rows={1}
+        value={input}
+        onChange={e => setInput(e.target.value)}
+        onKeyDown={onKey}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        placeholder={ph}
+        disabled={loading || recording !== "idle"}
+        style={{
+          flex:1, resize:"none", background:"transparent", border:"none", outline:"none",
+          fontSize:14, color:R.text0, lineHeight:1.5, fontFamily:"inherit",
+          maxHeight:120, overflowY:"auto", padding:"2px 0",
+        }}
+      />
+      {/* Mic */}
+      <button
+        onClick={recording==="recording" ? stopRec : startRec}
+        disabled={micBusy}
+        aria-label={recording==="recording" ? "Stop recording" : "Voice input"}
+        style={{
+          flexShrink:0, width:36, height:36,
+          display:"flex", alignItems:"center", justifyContent:"center",
+          border:`1px solid ${recording==="recording" ? "#5f1010" : R.border1}`,
+          borderRadius:8,
+          background:recording==="recording" ? R.redSurf : R.surf2,
+          color:recording==="recording" ? R.red : R.text2,
+          cursor:micBusy?"not-allowed":"pointer",
+          opacity:micBusy?0.35:1,
+          transition:"all 180ms", fontFamily:"inherit",
+        }}
+      >
+        {recording==="processing"
+          ? <span style={{fontSize:14,animation:"hhSpin .7s linear infinite",display:"inline-block"}}>↻</span>
+          : <IcoMic/>}
+      </button>
+      {/* Send */}
+      <button
+        onClick={sendText}
+        disabled={!canSend}
+        aria-label="Send"
+        style={{
+          flexShrink:0, width:36, height:36,
+          display:"flex", alignItems:"center", justifyContent:"center",
+          border:`1px solid ${canSend ? "rgba(255,255,255,0.2)" : R.border1}`,
+          borderRadius:8,
+          background:canSend ? R.text0 : R.surf2,
+          color:canSend ? "#000" : R.text3,
+          cursor:canSend?"pointer":"not-allowed",
+          transition:"all 180ms", fontFamily:"inherit",
+        }}
+      >
+        <IcoSend/>
+      </button>
+    </div>
+  );
 
-  // ─── render ──────────────────────────────────────────────────────────────────
+  /* ── Render ──────────────────────────────────────────────────────────────── */
   return (
-    <div className="flex flex-col h-screen bg-zinc-50 dark:bg-zinc-950">
+    <>
+      <style>{`
+        *,*::before,*::after{box-sizing:border-box}
+        html,body{height:100%;margin:0}
+        body{
+          font-family:'Inter',var(--font-geist-sans),ui-sans-serif,system-ui,-apple-system,sans-serif;
+          background:#000;color:#fff;
+          -webkit-font-smoothing:antialiased;
+          -moz-osx-font-smoothing:grayscale;
+        }
+        textarea{font-family:inherit}
+        textarea::placeholder{color:#525252}
+        button{font-family:inherit}
 
-      {/* ── header ── */}
-      <header className="shrink-0 border-b border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mx-auto flex max-w-2xl items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 text-white font-bold text-sm select-none">
-            HG
+        /* material chip hover */
+        .hh-chip:hover{
+          background:#1A1A1A!important;
+          border-color:#333!important;
+          color:#e0e0e0!important;
+        }
+        .hh-btn:hover{background:#1A1A1A!important}
+        .hh-back:hover{background:#1A1A1A!important}
+
+        @keyframes hhDot{0%,80%,100%{transform:translateY(0);opacity:.25}40%{transform:translateY(-5px);opacity:.9}}
+        @keyframes hhSpin{to{transform:rotate(360deg)}}
+        @keyframes hhFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        .hh-fade{animation:hhFade 0.45s cubic-bezier(.22,1,.36,1) both}
+
+        @media(max-width:640px){
+          .hh-hero{font-size:34px!important;letter-spacing:-0.03em!important}
+          .hh-wrap{padding:0 20px 64px!important}
+          .hh-nav{padding:0 20px!important}
+          .hh-pt{padding-top:72px!important}
+        }
+      `}</style>
+
+      <div style={{ display:"flex", flexDirection:"column", height:"100svh", background:R.bg, color:R.text0 }}>
+
+        {/* ── NAVBAR ─────────────────────────────────────────────────────── */}
+        <header className="hh-nav" style={{
+          flexShrink:0, height:64,
+          display:"flex", alignItems:"center", justifyContent:"space-between",
+          padding:"0 32px",
+          borderBottom:`1px solid ${R.border0}`,
+          background:R.bg,
+          /* very subtle inner bottom highlight — physical surface feel */
+          backgroundImage:"linear-gradient(180deg,rgba(255,255,255,0.015) 0%,transparent 100%)",
+        }}>
+          {/* Brand */}
+          <div style={{ display:"flex", alignItems:"center", gap:11 }}>
+            {/* HH mark */}
+            <div style={{
+              width:30, height:30, borderRadius:8,
+              background:R.surf1,
+              border:`1px solid ${R.border1}`,
+              display:"flex", alignItems:"center", justifyContent:"center",
+              fontSize:11, fontWeight:700, color:R.text0, letterSpacing:"-0.4px",
+              /* subtle top highlight */
+              backgroundImage:"linear-gradient(160deg,rgba(255,255,255,0.06) 0%,transparent 60%)",
+            }}>
+              HH
+            </div>
+            <span style={{ fontSize:14, fontWeight:500, color:R.text0, letterSpacing:"-0.2px" }}>
+              HH Goa 2026
+            </span>
           </div>
-          <div>
-            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Hey Goa</p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              HHGoa 2026 · saaras:v3 STT · bulbul:v3 TTS
-            </p>
-          </div>
 
-          <div className="ml-auto flex items-center gap-3">
-            {/* backend status */}
-            <BackendBadge status={backendStatus} />
-
-            {/* global stop button — visible only while audio is playing */}
-            {audioPlaying && (
-              <button
-                onClick={() => audioPlayer.stop()}
-                aria-label="Stop audio"
-                title="Stop playing"
-                className="flex h-7 items-center gap-1 rounded-lg bg-red-100 px-2 text-xs font-medium text-red-600 transition hover:bg-red-200 dark:bg-red-900/40 dark:text-red-300 dark:hover:bg-red-900/60"
-              >
-                <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
-                  <rect x="6" y="6" width="12" height="12" rx="1" />
-                </svg>
-                Stop
-              </button>
-            )}
-
-            {/* autoplay toggle */}
+          {/* Right controls */}
+          <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+            {/* Status */}
+            <div style={{ display:"flex", alignItems:"center", gap:7 }}>
+              <span style={{
+                width:6, height:6, borderRadius:"50%",
+                background: backend==="up" ? R.green : backend==="checking" ? R.amber : R.red,
+              }}/>
+              <span style={{
+                fontSize:13, fontWeight:450, letterSpacing:"0.01em",
+                color: backend==="up" ? R.green : backend==="checking" ? R.amber : R.red,
+              }}>
+                {backend==="up" ? "Online" : backend==="checking" ? "Connecting" : "Offline"}
+              </span>
+            </div>
+            {/* Sound */}
             <button
-              onClick={() => {
-                setAutoplay((v) => !v);
-                if (audioPlaying) audioPlayer.stop();
+              className="hh-btn"
+              onClick={() => setAutoplay(v=>!v)}
+              aria-label={autoplay?"Mute":"Unmute"}
+              style={{
+                width:34, height:34, borderRadius:8,
+                display:"flex", alignItems:"center", justifyContent:"center",
+                background:R.surf1, border:`1px solid ${R.border1}`,
+                color:autoplay?R.text1:R.text3,
+                cursor:"pointer", transition:"all 160ms",
               }}
-              aria-label={autoplay ? "Mute voice responses" : "Unmute voice responses"}
-              title={autoplay ? "Voice on — click to mute" : "Voice off — click to unmute"}
-              className={`flex h-7 w-7 items-center justify-center rounded-lg transition ${
-                autoplay
-                  ? "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300"
-                  : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500"
-              }`}
             >
-              {autoplay ? (
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072M12 6v12m0 0l-3-3m3 3l3-3M9 9H5a2 2 0 00-2 2v2a2 2 0 002 2h4l5 5V4L9 9z" />
-                </svg>
-              ) : (
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-                </svg>
-              )}
+              {autoplay ? <IcoVol/> : <IcoMute/>}
             </button>
           </div>
-        </div>
+        </header>
 
-        {/* offline banner */}
-        {backendStatus === "down" && (
-          <div className="mx-auto mt-2 max-w-2xl rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700 dark:bg-red-950/40 dark:text-red-300">
-            ⚠ Backend offline — run:{" "}
-            <code className="font-mono">
-              python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
-            </code>
-          </div>
-        )}
-      </header>
+        {/* ── BODY ───────────────────────────────────────────────────────── */}
+        <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
 
-      {/* ── messages ── */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
-        <div className="mx-auto flex max-w-2xl flex-col gap-4">
-          {messages.map((msg) => (
-            <ChatBubble key={msg.id} msg={msg} />
-          ))}
-          {loading && <TypingIndicator />}
-          <div ref={bottomRef} />
+          {!chatMode ? (
+
+            /* ── LANDING ───────────────────────────────────────────────── */
+            <div className="hh-wrap" style={{
+              flex:1, overflowY:"auto",
+              display:"flex", flexDirection:"column", alignItems:"center",
+              padding:"0 32px 72px",
+              /* very subtle radial material tonal variation — not a glow, just depth */
+              backgroundImage:"radial-gradient(ellipse 800px 500px at 50% 30%,rgba(20,20,20,0.9) 0%,transparent 100%)",
+            }}>
+              <div className="hh-pt hh-fade" style={{
+                width:"100%", maxWidth:760,
+                display:"flex", flexDirection:"column", alignItems:"center",
+                paddingTop:108,
+              }}>
+
+                {/* HG assistant mark */}
+                <div style={{
+                  width:52, height:52, borderRadius:13,
+                  background:R.surf1,
+                  border:`1px solid ${R.border2}`,
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                  fontSize:15, fontWeight:700, color:R.text0, letterSpacing:"-0.5px",
+                  marginBottom:36,
+                  /* subtle top highlight — material depth */
+                  backgroundImage:"linear-gradient(160deg,rgba(255,255,255,0.08) 0%,rgba(255,255,255,0) 55%)",
+                  boxShadow:"0 1px 0 0 rgba(255,255,255,0.04) inset",
+                }}>
+                  HG
+                </div>
+
+                {/* Hero heading */}
+                <h1 className="hh-hero" style={{
+                  margin:"0 0 18px",
+                  fontSize:"clamp(38px,5.5vw,58px)",
+                  fontWeight:700,
+                  lineHeight:1.08,
+                  letterSpacing:"-0.045em",
+                  color:R.text0,
+                  textAlign:"center",
+                  maxWidth:640,
+                }}>
+                  Hey! I&apos;m your<br/>
+                  <span style={{ color:R.text0 }}>Hacker House </span>
+                  <span style={{ color:R.green }}>Goa 2026</span>
+                  <span style={{ color:R.text0 }}> assistant</span>
+                </h1>
+
+                {/* Description */}
+                <p style={{
+                  margin:"0 0 44px",
+                  fontSize:16, color:R.text2, lineHeight:1.65,
+                  textAlign:"center", maxWidth:480,
+                }}>
+                  Ask me anything — dates, tasks, rules, schedule, prizes — or just say hi 👋
+                </p>
+
+                {/* Input */}
+                <div style={{ width:"100%", maxWidth:680, marginBottom:12 }}>
+                  <InputBar ph="Type or tap the mic to speak in any Indian language…"/>
+                </div>
+
+                {recording==="recording" && (
+                  <p style={{ fontSize:13, color:R.red, margin:"4px 0 0", textAlign:"center" }}>
+                    Recording — tap mic to stop
+                  </p>
+                )}
+
+                {/* Suggestion label */}
+                <p style={{
+                  margin:"36px 0 14px",
+                  fontSize:12, fontWeight:500,
+                  color:R.text3,
+                  textAlign:"center",
+                  letterSpacing:"0.08em",
+                  textTransform:"uppercase",
+                }}>
+                  You can ask me about
+                </p>
+
+                {/* Chips */}
+                <div style={{ display:"flex", flexWrap:"wrap", gap:8, justifyContent:"center", maxWidth:720 }}>
+                  {CHIPS.map(c => (
+                    <button
+                      key={c.label}
+                      className="hh-chip"
+                      onClick={() => { setInput(c.label); setChatMode(true); setTimeout(()=>inputRef.current?.focus(),100); }}
+                      style={{
+                        display:"inline-flex", alignItems:"center", gap:7,
+                        padding:"7px 13px",
+                        fontSize:13, fontWeight:450, color:R.text1,
+                        background:R.surf1,
+                        border:`1px solid ${R.border1}`,
+                        borderRadius:8, cursor:"pointer",
+                        lineHeight:1, fontFamily:"inherit",
+                        transition:"all 160ms",
+                      }}
+                    >
+                      <span style={{ fontSize:13 }}>{c.icon}</span>
+                      {c.label}
+                    </button>
+                  ))}
+                </div>
+
+              </div>
+            </div>
+
+          ) : (
+
+            /* ── CHAT ──────────────────────────────────────────────────── */
+            <>
+              <div style={{ flex:1, overflowY:"auto", padding:"28px 32px 16px" }}>
+                <div style={{ maxWidth:680, margin:"0 auto", display:"flex", flexDirection:"column", gap:12 }}>
+                  {messages.map(m => <Bubble key={m.id} msg={m}/>)}
+                  {loading && <TypingDots/>}
+                  <div ref={bottomRef}/>
+                </div>
+              </div>
+
+              <div style={{
+                flexShrink:0, padding:"12px 32px 24px",
+                borderTop:`1px solid ${R.border0}`, background:R.bg,
+              }}>
+                {recording==="recording" && (
+                  <p style={{ fontSize:13, color:R.red, textAlign:"center", margin:"0 0 10px" }}>
+                    Recording — tap mic to stop
+                  </p>
+                )}
+                <div style={{ maxWidth:680, margin:"0 auto", display:"flex", alignItems:"center", gap:8 }}>
+                  <button
+                    className="hh-back"
+                    onClick={() => setChatMode(false)}
+                    aria-label="Back"
+                    style={{
+                      flexShrink:0, width:36, height:36, borderRadius:8,
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      background:R.surf1, border:`1px solid ${R.border1}`,
+                      color:R.text2, cursor:"pointer", transition:"all 160ms",
+                    }}
+                  >
+                    <IcoBack/>
+                  </button>
+                  <InputBar ph="Ask about HHGoa 2026… (Enter to send)"/>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
-
-      {/* ── input bar ── */}
-      <div className="shrink-0 border-t border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mx-auto flex max-w-2xl items-end gap-2">
-          <textarea
-            ref={inputRef}
-            rows={1}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={
-              backendStatus === "down"
-                ? "Backend offline — start the server first"
-                : "Ask about HHGoa 2026… (Enter to send)"
-            }
-            disabled={loading || recording !== "idle" || backendStatus === "down"}
-            className="flex-1 resize-none rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-500 dark:focus:ring-indigo-900/40"
-            style={{ maxHeight: "8rem", overflowY: "auto" }}
-          />
-
-          {/* send */}
-          <button
-            onClick={handleTextSubmit}
-            disabled={!input.trim() || loading || recording !== "idle" || backendStatus === "down"}
-            aria-label="Send message"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white transition hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <svg className="h-4 w-4 rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5M5 12l7-7 7 7" />
-            </svg>
-          </button>
-
-          {/* mic */}
-          <button
-            onClick={recording === "recording" ? stopRecording : startRecording}
-            disabled={(loading && recording === "idle") || backendStatus === "down"}
-            aria-label={recording === "recording" ? "Stop recording" : "Start voice input"}
-            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition ${
-              recording === "recording"
-                ? "bg-red-500 text-white animate-pulse hover:bg-red-600"
-                : recording === "processing"
-                ? "bg-amber-400 text-white cursor-wait"
-                : "border border-zinc-200 bg-zinc-50 text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-            } disabled:opacity-40 disabled:cursor-not-allowed`}
-          >
-            {recording === "processing" ? (
-              <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth={4} />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-              </svg>
-            ) : (
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8" />
-              </svg>
-            )}
-          </button>
-        </div>
-
-        {recording === "recording" && (
-          <p className="mt-2 text-center text-xs text-red-500 dark:text-red-400">
-            🔴 Recording… tap mic again to stop and send
-          </p>
-        )}
-      </div>
-    </div>
+    </>
   );
 }

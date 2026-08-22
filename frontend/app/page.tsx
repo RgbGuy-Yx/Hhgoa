@@ -34,7 +34,11 @@ type RecordingState = "idle" | "recording" | "processing";
 type BackendStatus = "checking" | "up" | "down";
 type TabView = "landing" | "chat" | "specs";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// All API calls go through Next.js proxy routes (/api/ask, /api/ask-text).
+// In dev: proxy routes forward to localhost:8000 via BACKEND_URL env var.
+// In prod: proxy routes forward to Render via BACKEND_URL set in Vercel.
+// The browser ALWAYS calls same-origin /api/* — never hits Render directly.
+// This solves ERR_BLOCKED_BY_CLIENT from Brave/uBlock on cross-origin fetches.
 let globalMsgCounter = 0;
 const nextMsgId = () => ++globalMsgCounter;
 
@@ -485,27 +489,25 @@ export default function Home() {
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  /* Health Ping */
+  /* Health Ping — proxied through Next.js API route to avoid ad-blocker blocks */
   useEffect(() => {
     let unmounted = false;
     const checkStatus = async () => {
       try {
-        const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(3500) });
+        // /api/health is same-origin — never blocked by Brave or uBlock
+        const res = await fetch("/api/health", {
+          cache: "no-store",
+          signal: AbortSignal.timeout(5000),
+        });
         if (!unmounted) setBackend(res.ok ? "up" : "down");
       } catch (err) {
         if (unmounted) return;
         const msg = err instanceof Error ? err.message : String(err);
-        // ERR_BLOCKED_BY_CLIENT = ad blocker is intercepting the request.
-        // The backend may still be running — don't mark as offline.
-        // Instead keep the previous state or show "checking" so the user
-        // isn't falsely told the backend is down.
         if (
           msg.toLowerCase().includes("blocked") ||
-          msg.toLowerCase().includes("err_blocked") ||
-          msg.toLowerCase().includes("failed to fetch")
+          msg.toLowerCase().includes("err_blocked")
         ) {
-          // Don't flip to "down" — leave as-is (checking or last known state)
-          return;
+          return; // ad blocker — don't flip to offline
         }
         setBackend("down");
       }
@@ -587,7 +589,7 @@ export default function Home() {
       setLoading(true);
 
       try {
-        const res = await fetch(`${API_BASE}/ask-text`, {
+        const res = await fetch(`/api/ask-text`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ question: query, tts: true }),
@@ -641,7 +643,7 @@ export default function Home() {
         formData.append("audio", audioBlob, "recording.webm");
 
         try {
-          const res = await fetch(`${API_BASE}/ask?tts=true`, {
+          const res = await fetch(`/api/ask?tts=true`, {
             method: "POST",
             body: formData,
           });

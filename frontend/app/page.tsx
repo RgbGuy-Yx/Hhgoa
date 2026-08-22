@@ -492,8 +492,22 @@ export default function Home() {
       try {
         const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(3500) });
         if (!unmounted) setBackend(res.ok ? "up" : "down");
-      } catch {
-        if (!unmounted) setBackend("down");
+      } catch (err) {
+        if (unmounted) return;
+        const msg = err instanceof Error ? err.message : String(err);
+        // ERR_BLOCKED_BY_CLIENT = ad blocker is intercepting the request.
+        // The backend may still be running — don't mark as offline.
+        // Instead keep the previous state or show "checking" so the user
+        // isn't falsely told the backend is down.
+        if (
+          msg.toLowerCase().includes("blocked") ||
+          msg.toLowerCase().includes("err_blocked") ||
+          msg.toLowerCase().includes("failed to fetch")
+        ) {
+          // Don't flip to "down" — leave as-is (checking or last known state)
+          return;
+        }
+        setBackend("down");
       }
     };
     checkStatus();
@@ -585,6 +599,7 @@ export default function Home() {
         handleAgentResponse(data);
       } catch (err) {
         if (err instanceof Error && err.message.toLowerCase().includes("failed to fetch")) {
+          // Only mark offline if it's not a Brave/ad-blocker block
           setBackend("down");
         }
         pushMessage({

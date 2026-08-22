@@ -1,16 +1,16 @@
-# FAQ
+# Frequently Asked Questions (FAQ)
 
-## Do I need to bring my own laptop?
-Yes, every participant must bring their own laptop and charger. The venue provides power strips and Ethernet drops at each table, but no loaner hardware is available.
+## Who is organizing Hacker House Goa 2026?
+Hacker House Goa 2026 is organized by 2:47PM Studio (247pmstudio), a venture studio and growth network at the intersection of AI and Web3/Crypto.
 
-## Is travel or accommodation covered?
-Accommodation for the five nights of the event is fully covered by the organizers, including all meals. Travel to and from Goa is not covered, but organizers can help arrange discounted shuttle service from Dabolim Airport and Goa railway stations on request.
+## What is the total prize pool and incentives?
+The total prize and grant pool is ₹45,00,000 (₹45 Lakhs), distributed across category bounty winners, founder grants, and venture acceleration opportunities.
 
-## What if I don't have a team yet?
-Team formation happens on the evening of Day 1, right after the opening ceremony. Solo participants are strongly encouraged to attend the mixer at 6:30 PM IST, where organizers run a short matchmaking exercise based on task interest.
+## What is the selection process and team size?
+247 top builders are shortlisted based on their GitHub portfolios and submissions to pre-event technical challenges like Task #2 (#RAGInGoa). Teams can consist of 1 to 4 members.
 
-## Can I switch tasks after Day 1?
-Only once, and only at the Day 3 midpoint check-in. After that checkpoint, task selection is locked for the remainder of the event.
+## Is accommodation and food provided?
+Yes, full accommodation at the private beachfront property in Goa and all meals/refreshments for the 4-day residency are covered for all selected participants. Travel to Goa is arranged individually with airport shuttle coordination provided by organizers.
 
-## What are the judging criteria?
-Projects are judged on technical execution, groundedness of the demo (does it actually work live, not just in a recording), and clarity of the problem being solved. A full rubric is shared with teams on Day 1.
+## How does Task #2 (#RAGInGoa) fit in?
+Task #2 is the Voice-Enabled RAG Model shortlisting challenge closing August 22 at 11:59 PM IST. Selected projects earn recognition on the ecosystem Radar and fast-track invitations to the Goa residency cohort.

@@ -1,11 +1,7 @@
-# Rules
+# Rules and Eligibility
 
-Teams must have between one and four members. Solo entries are allowed and are judged on the same rubric as teams, with no handicap or bonus applied.
-
-All code must be written during the event window, from the opening ceremony on March 2 at 6:00 PM IST to the submission deadline on March 6 at 2:00 PM IST. Pre-existing personal libraries may be reused if disclosed in the submission form, but the core project logic must be new work.
-
-Use of third-party APIs and paid models is allowed and encouraged. Organizers will provide shared API credits for Mistral AI and Sarvam AI; teams needing other providers must supply their own keys. Any team found sharing credits outside their own team will be disqualified.
-
-Plagiarism, uncredited reuse of another team's code, and submitting a project built before the event will result in immediate disqualification. The judging panel's decision on disqualification is final and not open to appeal.
-
-Every team must give a live demo. Pre-recorded demo videos are only accepted as a fallback if the venue's internet fails during the demo slot, and this fallback must be flagged to organizers at least one hour in advance.
+1. **Team Size**: Teams must consist of 1 to 4 members. Solo builders are welcome and evaluated on the exact same merit rubric.
+2. **Original Work**: All project core logic must be built during the residency and challenge timeframe. Open-source libraries, APIs, and frameworks (e.g. LangChain, ChromaDB, Sarvam AI, Mistral AI) are encouraged when properly credited.
+3. **API Usage & Credits**: Organizers (2:47PM Studio) facilitate developer access and API credits for partnering infrastructure including Mistral AI and Sarvam AI models.
+4. **Live Verification**: Every submission must deliver a live working demonstration before the jury panel. Prerecorded slides or mock videos without working code will result in point deductions.
+5. **Academic Integrity & Conduct**: Zero tolerance for plagiarism, duplicate repository submissions, or toxic behavior. Disqualification decisions by the organizer jury are binding.

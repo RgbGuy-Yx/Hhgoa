@@ -1,16 +1,27 @@
-# Schedule
+# Schedule and Milestones
 
-## Day 1 - March 2
-Doors open at 3:00 PM IST for check-in and badge pickup. The opening ceremony starts at 6:00 PM IST, followed by task selection and team formation. Building officially begins at 8:00 PM IST.
+## Pre-Event Shortlisting & Task Phase
+- **Shortlisting Task #2 Closes**: August 22, 2026, at 11:59 PM IST (#RAGInGoa Voice Model submission).
+- **Cohort Final Selection Announced**: October 1, 2026, via Devfolio.
 
-## Day 2 - March 3
-Breakfast is served from 8:00 AM to 9:30 AM IST. Mentor office hours run from 10:00 AM to 1:00 PM IST, with mentors rotating between tables every twenty minutes. Free build time continues through the afternoon and evening.
+## Residency Timeline (October 28 - October 31, 2026)
 
-## Day 3 - March 4
-The midpoint check-in happens at 11:00 AM IST. Each team gives a two-minute progress update to a rotating panel of mentors. This is also the last point at which a team may switch their build task.
+### Day 1 (October 28) - Check-in & Kickoff
+- 03:00 PM IST: Check-in, badge distribution, and beachfront networking.
+- 06:00 PM IST: Opening Keynote by 2:47PM Studio, problem statement release, and team alignment.
+- 08:00 PM IST: Official hacking and residency build time commences.
 
-## Day 4 - March 5
-A guest talk on applied retrieval-augmented generation systems runs at 4:00 PM IST. The rest of the day is reserved for building, with mentor office hours again from 10:00 AM to 1:00 PM IST.
+### Day 2 (October 29) - Architecture & Deep Build
+- 09:00 AM IST: Breakfast & morning standup.
+- 11:00 AM - 02:00 PM IST: 1-on-1 VC & mentor technical architecture reviews.
+- 08:00 PM IST: Mid-hack prototype demos and grounding stress tests.
 
-## Day 5 - March 6
-Submissions close at 2:00 PM IST sharp. Live demos begin at 3:00 PM IST and run until 6:30 PM IST, followed by judging deliberation. Winners are announced at 8:00 PM IST during the closing dinner.
+### Day 3 (October 30) - Scaling & Guardrail Hardening
+- 10:00 AM IST: Latency optimization & guardrail verification workshops.
+- 04:00 PM IST: Technical office hours with ecosystem leads.
+- 10:00 PM IST: Pre-demo rehearsal and deployment locks.
+
+### Day 4 (October 31) - Code Freeze & Demo Day
+- 02:00 PM IST: Hard code freeze and Devfolio GitHub submission deadline.
+- 03:30 PM IST: Live Jury Demos & on-chain audience voting.
+- 07:30 PM IST: ₹45L Prize Pool & Grant Award Ceremony followed by the closing dinner.

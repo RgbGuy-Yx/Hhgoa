@@ -1,19 +1,26 @@
-# Build Tasks
+# Build Tasks and Tracks
 
-Hacker House Goa 2026 defines four build tasks. Every participant must commit to exactly one task on day one and may not switch tasks after the midpoint check-in on day three.
+Hacker House Goa 2026 defines specialized tracks with dedicated bounties and shortlisting challenges. Every participating team commits to a track on Day 1.
 
-## Task 1: Offline-First Field Data Collector
+## Task 2: Voice-Enabled RAG Model (#RAGInGoa)
 
-Build a mobile-friendly tool for collecting structured survey data in areas with unreliable connectivity. Submissions must demonstrate local-first storage and background sync once connectivity returns. Judges will specifically test the app in airplane mode.
+Build an end-to-end voice-to-answer retrieval-augmented generation (RAG) system:
+- **Speech Input**: Real voice-to-text input supporting multilingual/Indic languages (e.g. via Sarvam AI saaras:v3), not typed text.
+- **Engineered Retrieval**: Advanced chunking strategies (such as sentence-window expansion and markdown structure parsing) rather than naive character splitting.
+- **Low Latency**: Blazing-fast end-to-end pipeline execution with latency targets under 200ms for retrieval.
+- **Latency Benchmarking**: Rigorously benchmarked across real queries capturing P50, P70, and P100 latency distributions.
+- **Production Harness**: Built inside a robust harness with automatic retries, structured Pydantic I/O, and graceful error recovery.
+- **Guardrails**: Input and output guardrails that know when *not* to answer ungrounded or out-of-domain questions.
+- Tag and showcase submissions using `#RAGInGoa` to be featured on the ecosystem Radar. Shortlisting round closes on August 22 at 11:59 PM IST.
 
-## Task 2: Voice-Enabled RAG System
+## Autonomous Multi-Agent Systems Track
 
-Build a retrieval-augmented generation system that answers spoken questions using a grounded document corpus. The pipeline must accept a voice question as input, transcribe it, retrieve relevant context from the provided documents, and generate a grounded answer as either text or speech. Teams choose their own corpus, but it must be domain-specific rather than open-ended web search. Judges will ask follow-up voice questions live during the demo, so the pipeline should handle real microphone input, not just pre-recorded clips.
+Build collaborative autonomous agent swarms capable of complex multi-step reasoning, dynamic tool usage, and state graph orchestration (LangChain 1.x StateGraph / LangGraph) under strict latency constraints.
 
-## Task 3: Local-First Collaboration Tool
+## Decentralized Compute and Edge Systems
 
-Build a real-time collaborative editor or whiteboard that works over a local mesh network without depending on a central cloud server. Bonus points for conflict-free replicated data type (CRDT) usage.
+Build resilient local-first or decentralized applications operating over peer-to-peer mesh networks with zero central cloud reliance, utilizing conflict-free replicated data types (CRDTs) and local vector embeddings.
 
-## Task 4: Sustainable Supply Chain Tracker
+## AI + Web3 Consumer Products
 
-Build a lightweight tracker for verifying provenance claims along a short supply chain, such as farm-to-table produce or small-batch textiles. Submissions should include at least one QR-code or NFC-based verification step.
+Design and launch consumer-facing decentralized AI agents with on-chain verification, cryptographic micropayments, and real-time execution.

@@ -1,9 +1,13 @@
-# Submission Guidelines
+# Submission and Evaluation Guidelines
 
-Every team must submit a public GitHub repository link through the submission form no later than 2:00 PM IST on March 6. Late submissions are not accepted under any circumstances, including internet outages on the team's end.
+## Submission Requirements
+1. **GitHub Repository**: A clean, public repository containing all project code, clear commit history, and a detailed README with setup and execution instructions.
+2. **Architecture Documentation**: Clear explanation of the pipeline architecture (e.g. STT models, sentence-window chunking strategy, vector store indexing, LLM orchestration, and TTS).
+3. **Live Demonstration**: Teams must present a live interactive demo showcasing real-time execution, guardrail resilience, and grounded outputs.
+4. **Devfolio Submission**: Official entries must be submitted through the Hacker House Goa portal on Devfolio before the designated milestone cutoffs.
 
-The repository must include a short README describing the problem, the approach, and how to run the project locally. Teams should also include a one-paragraph note on what they would build next if the event continued for another week, since this feeds into the "most promising direction" award.
-
-Each team must also submit a three-minute demo video as a backup, uploaded to the shared drive folder linked in the submission form. This video is only shown to judges if the live demo fails for reasons outside the team's control.
-
-Submissions are evaluated by a panel of five judges: two mentors, one representative from the Goa Builders Collective, and two external judges from the partnering angel networks. Judges score independently before discussing as a group, and scores are not revealed to teams until the closing dinner.
+## Judging Criteria
+- **Technical Excellence (35%)**: Architectural soundness, engineered retrieval mechanisms (e.g. sentence-windowing vs naive split), latency optimization, and robust error recovery.
+- **Grounding & Guardrails (25%)**: Accuracy of RAG citations, low hallucination rates, and proactive policy guardrails.
+- **Product & UX (20%)**: Polish of the user interface, seamless voice interactions, and responsive design.
+- **Originality & Impact (20%)**: Feasibility of the problem statement and real-world applicability beyond the hackathon demo.

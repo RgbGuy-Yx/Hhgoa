@@ -1,20 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Hey Goa - HHGoa 2026 Assistant",
-  description: "Voice & text Q&A for Hacker House Goa 2026",
+  title: "HHGoa 2026 — Voice & Intelligence Assistant",
+  description: "Editorial voice & knowledge assistant for Hacker House Goa 2026",
 };
 
 export default function RootLayout({
@@ -23,11 +12,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+    <html lang="en" className="dark h-full antialiased">
+      <body className="min-h-full flex flex-col bg-black text-[#fcfdff] selection:bg-white/20 selection:text-white font-sans">
         {children}
       </body>
     </html>

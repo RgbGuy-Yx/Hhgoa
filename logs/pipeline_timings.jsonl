@@ -52,3 +52,36 @@
 {"stage": "retrieval", "query": "prize money", "start_ts": 1787244442.0027444, "duration_ms": 1792.5410000000284, "num_results": 3, "num_kept": 3, "best_distance": 0.669846773147583}
 {"stage": "retrieval", "query": "prize money Hacker House Goa 2026", "start_ts": 1787244444.8203456, "duration_ms": 998.9951000000019, "num_results": 3, "num_kept": 3, "best_distance": 0.33129364252090454}
 {"stage": "generation", "question": "Hey, what is the price money of Hacker House Goa?", "start_ts": 1787244440.8391273, "duration_ms": 6527.273400000013, "used_retrieval": true, "num_source_docs": 5}
+{"stage": "retrieval", "query": "rules, team limits, and submission criteria for Hacker House Goa 2026", "start_ts": 1787377793.155316, "duration_ms": 6047.1833000001425, "num_results": 3, "num_kept": 3, "best_distance": 0.3109169900417328}
+{"stage": "retrieval", "query": "submission format or criteria for Hacker House Goa 2026", "start_ts": 1787377799.9386396, "duration_ms": 537.0657000003121, "num_results": 3, "num_kept": 3, "best_distance": 0.3467140793800354}
+{"stage": "retrieval", "query": "team size limits for Hacker House Goa 2026", "start_ts": 1787377799.9376407, "duration_ms": 1061.0216000004584, "num_results": 3, "num_kept": 3, "best_distance": 0.33917298913002014}
+{"stage": "retrieval", "query": "submission format or criteria for Hacker House Goa 2026", "start_ts": 1787377801.7724216, "duration_ms": 428.1103000002986, "num_results": 3, "num_kept": 3, "best_distance": 0.3467140793800354}
+{"stage": "retrieval", "query": "team size limit for Hacker House Goa 2026", "start_ts": 1787377801.7714236, "duration_ms": 438.73119999989285, "num_results": 3, "num_kept": 3, "best_distance": 0.35488542914390564}
+{"stage": "retrieval", "query": "team size limit for Hacker House Goa 2026", "start_ts": 1787377802.9288116, "duration_ms": 759.3125000003056, "num_results": 3, "num_kept": 3, "best_distance": 0.35488542914390564}
+{"stage": "retrieval", "query": "submission format or criteria for Hacker House Goa 2026", "start_ts": 1787377802.929808, "duration_ms": 1233.4272999996756, "num_results": 3, "num_kept": 3, "best_distance": 0.34689176082611084}
+{"stage": "retrieval", "query": "submission format or criteria for Hacker House Goa 2026", "start_ts": 1787377804.8891478, "duration_ms": 416.818400000011, "num_results": 3, "num_kept": 3, "best_distance": 0.3467140793800354}
+{"stage": "retrieval", "query": "team size limit for Hacker House Goa 2026", "start_ts": 1787377804.8881483, "duration_ms": 457.20129999972414, "num_results": 3, "num_kept": 3, "best_distance": 0.35488542914390564}
+{"stage": "retrieval", "query": "team size limit for Hacker House Goa 2026", "start_ts": 1787377806.00399, "duration_ms": 416.58409999945434, "num_results": 3, "num_kept": 3, "best_distance": 0.35488542914390564}
+{"stage": "retrieval", "query": "submission format or criteria for Hacker House Goa 2026", "start_ts": 1787377806.0044544, "duration_ms": 458.940900000016, "num_results": 3, "num_kept": 3, "best_distance": 0.3467140793800354}
+{"stage": "generation", "question": "What are the rules, team limits, and submission criteria?", "start_ts": 1787377790.6571612, "duration_ms": 18509.612500000003, "used_retrieval": true, "num_source_docs": 2}
+{"stage": "retrieval", "query": "mentor checkpoints", "start_ts": 1787378090.715697, "duration_ms": 950.1350999998976, "num_results": 3, "num_kept": 3, "best_distance": 0.6351159811019897}
+{"stage": "retrieval", "query": "Wi-Fi access", "start_ts": 1787378090.7187169, "duration_ms": 1556.206199999906, "num_results": 3, "num_kept": 3, "best_distance": 0.5394942760467529}
+{"stage": "retrieval", "query": "Goa venue details", "start_ts": 1787378090.7166967, "duration_ms": 2424.2417000004934, "num_results": 3, "num_kept": 3, "best_distance": 0.4080447554588318}
+{"stage": "generation", "question": "Tell me about the Goa venue, mentor checkpoints, and Wi-Fi access.", "start_ts": 1787378089.8836598, "duration_ms": 5318.015800000467, "used_retrieval": true, "num_source_docs": 4}
+{"stage": "guardrail_input", "question": "", "reason": "Input too short to process.", "start_ts": 1787378445.0061128, "duration_ms": 0.002600000698294025}
+{"stage": "retrieval", "query": "when is Hacker House Goa 2026", "start_ts": 1787378461.1565764, "duration_ms": 1853.6376999991262, "num_results": 3, "num_kept": 3, "best_distance": 0.2075340747833252}
+{"stage": "retrieval", "query": "dates of Hacker House Goa 2026", "start_ts": 1787378463.6392512, "duration_ms": 428.3090999997512, "num_results": 3, "num_kept": 3, "best_distance": 0.24163585901260376}
+{"stage": "generation", "question": "when is hacker house goa", "start_ts": 1787378460.371058, "duration_ms": 8797.297600000093, "used_retrieval": true, "num_source_docs": 3}
+{"stage": "retrieval", "query": "accommodation details for participants", "start_ts": 1787378493.2242475, "duration_ms": 540.1949000006425, "num_results": 3, "num_kept": 3, "best_distance": 0.5200203657150269}
+{"stage": "generation", "question": "what accomodation will we get", "start_ts": 1787378492.5361073, "duration_ms": 2027.0166000000245, "used_retrieval": true, "num_source_docs": 2}
+{"stage": "generation", "question": "accha meko batao aur kya kya hoga", "start_ts": 1787378525.6092634, "duration_ms": 1958.2029000002876, "used_retrieval": false, "num_source_docs": 0}
+{"stage": "guardrail_input", "question": "", "reason": "Input too short to process.", "start_ts": 1787378707.38842, "duration_ms": 0.005699999746866524}
+{"stage": "generation", "question": "ni peru emiti", "start_ts": 1787378718.4993093, "duration_ms": 1374.1062999997666, "used_retrieval": false, "num_source_docs": 0}
+{"stage": "generation", "question": "do you know telegu?", "start_ts": 1787378735.5805738, "duration_ms": 1079.0651999996044, "used_retrieval": false, "num_source_docs": 0}
+{"stage": "retrieval", "query": "Hacker House Goa 2026 dates", "start_ts": 1787378847.5531776, "duration_ms": 5842.002600000342, "num_results": 3, "num_kept": 3, "best_distance": 0.30138275027275085}
+{"stage": "retrieval", "query": "Hacker House Goa 2026 event dates schedule", "start_ts": 1787378854.5119026, "duration_ms": 857.1755000002668, "num_results": 3, "num_kept": 3, "best_distance": 0.2705056369304657}
+{"stage": "retrieval", "query": "HHGoa 2026 dates venue schedule", "start_ts": 1787378856.1186967, "duration_ms": 983.1700000004275, "num_results": 3, "num_kept": 3, "best_distance": 0.5477844476699829}
+{"stage": "generation", "question": "Hacker House Goa ke dates kya hain?", "start_ts": 1787378845.6349056, "duration_ms": 13846.229300000232, "used_retrieval": true, "num_source_docs": 3}
+{"stage": "generation", "question": "speak in telegu", "start_ts": 1787378856.7450585, "duration_ms": 3298.6479999999574, "used_retrieval": false, "num_source_docs": 0}
+{"stage": "generation", "question": "what is hacker house goa tell me in telegu", "start_ts": 1787378922.343602, "duration_ms": 1778.770899999472, "used_retrieval": false, "num_source_docs": 0}
+{"stage": "guardrail_output", "question": "what is hacker house goa tell me in telegu", "reason": "Factual HHGoa question answered without retrieval — answer may be ungrounded.", "start_ts": 1787378922.343602, "duration_ms": 1778.770899999472}

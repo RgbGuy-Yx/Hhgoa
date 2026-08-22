@@ -158,8 +158,9 @@ _SYSTEM_PROMPT = (
     "2. If retrieve_hhgoa_info returns NO_RELEVANT_INFO_FOUND, say so clearly and "
     "   naturally. Do NOT guess or fabricate HHGoa-specific facts.\n"
     "3. Never invent HHGoa facts even if the user asks repeatedly or casually.\n"
-    "4. Keep answers concise and conversational.\n"
-    "5. If a question is completely unrelated to HHGoa or general hackathon topics, "
+    "4. Always format your responses using clean, structured Markdown syntax. Use headings (e.g. ### Header), bold text for key terms, bullet points (`- `) or numbered lists for key items, and concise sections.\n"
+    "5. Keep answers concise, clear, and well-structured.\n"
+    "6. If a question is completely unrelated to HHGoa or general hackathon topics, "
     "   politely say you are only here to help with HHGoa 2026."
 )
 
@@ -181,7 +182,7 @@ def get_agent():
 # ─── output schema ────────────────────────────────────────────────────────────
 
 class AgentAnswer(BaseModel):
-    answer: str = Field(description="Natural-language answer to show the user.")
+    answer: str = Field(description="Natural-language answer in structured Markdown syntax to show the user.")
     used_retrieval: bool = Field(description="True if retrieve_hhgoa_info was called.")
     source_docs: list[str] = Field(description="Unique source filenames grounding the answer.")
     is_refusal: bool = Field(description="True if declining because no grounded info found.")
@@ -191,7 +192,7 @@ class AgentAnswer(BaseModel):
 
 _STRUCTURING_SYSTEM = (
     "Extract a structured record from an assistant reply. "
-    "Keep answer text as-is (light cleanup only). "
+    "Keep answer text as-is (preserve all markdown formatting, bullet points, headers, and bold text). "
     "used_retrieval, source_docs, guardrail_triggered, guardrail_reason are supplied "
     "as ground-truth — copy them unchanged. "
     "Set is_refusal=true only if the reply declines a factual HHGoa question "

@@ -38,3 +38,17 @@
 {"stage": "generation", "question": "हैकर हाउस इवेंट के बारे में तुम क्या जानते हो?", "start_ts": 1787241208.900908, "duration_ms": 2805.3069999999707, "used_retrieval": false, "num_source_docs": 0}
 {"stage": "retrieval", "query": "Hacker House Goa 2026 dates", "start_ts": 1787241493.6255627, "duration_ms": 5017.809800000123, "num_results": 3, "num_kept": 3, "best_distance": 0.2764361500740051}
 {"stage": "generation", "question": "हैकर हाउस इवेंट के डेट्स कब हैं?", "start_ts": 1787241492.9441783, "duration_ms": 7547.879400000056, "used_retrieval": true, "num_source_docs": 2}
+{"stage": "generation", "question": "Hey, what's up bro?", "start_ts": 1787243899.3768787, "duration_ms": 1671.4221999999381, "used_retrieval": false, "num_source_docs": 0}
+{"stage": "generation", "question": "मेरे को एक चीज़ पूछनी है तुमसे।", "start_ts": 1787243923.7364502, "duration_ms": 641.3148000000319, "used_retrieval": false, "num_source_docs": 0}
+{"stage": "retrieval", "query": "Hacker House Goa 2026 dates", "start_ts": 1787243938.581963, "duration_ms": 13167.412000000013, "num_results": 3, "num_kept": 3, "best_distance": 0.2764361500740051}
+{"stage": "generation", "question": "मेरे को यह बताओ कि हैकर हाउस गोवा कब हो रहा है?", "start_ts": 1787243937.7401636, "duration_ms": 15836.169400000017, "used_retrieval": true, "num_source_docs": 2}
+{"stage": "retrieval", "query": "prices, prize money, prizes", "start_ts": 1787243991.6267118, "duration_ms": 730.6573000000753, "num_results": 3, "num_kept": 3, "best_distance": 0.5455055832862854}
+{"stage": "generation", "question": "Okay, so do you have any idea about the prices, price money and all?", "start_ts": 1787243990.8793845, "duration_ms": 2867.117599999915, "used_retrieval": true, "num_source_docs": 3}
+{"stage": "generation", "question": "goyant mouz korunk kitem borem asa", "start_ts": 1787244103.8405788, "duration_ms": 1105.1120999999284, "used_retrieval": false, "num_source_docs": 0}
+{"stage": "generation", "question": "Tell me who built you", "start_ts": 1787244136.0710652, "duration_ms": 977.533200000039, "used_retrieval": false, "num_source_docs": 0}
+{"stage": "generation", "question": "Tell me about your back end architecture", "start_ts": 1787244153.2074893, "duration_ms": 1498.0775999999878, "used_retrieval": false, "num_source_docs": 0}
+{"stage": "retrieval", "query": "prize money and schedule of HHGoa 2026", "start_ts": 1787244411.0193853, "duration_ms": 4844.365700000026, "num_results": 3, "num_kept": 3, "best_distance": 0.4699300527572632}
+{"stage": "generation", "question": "What is the prize money and schedule of HHGoa 2026?", "start_ts": 1787244407.0599854, "duration_ms": 10571.512900000016, "used_retrieval": true, "num_source_docs": 2}
+{"stage": "retrieval", "query": "prize money", "start_ts": 1787244442.0027444, "duration_ms": 1792.5410000000284, "num_results": 3, "num_kept": 3, "best_distance": 0.669846773147583}
+{"stage": "retrieval", "query": "prize money Hacker House Goa 2026", "start_ts": 1787244444.8203456, "duration_ms": 998.9951000000019, "num_results": 3, "num_kept": 3, "best_distance": 0.33129364252090454}
+{"stage": "generation", "question": "Hey, what is the price money of Hacker House Goa?", "start_ts": 1787244440.8391273, "duration_ms": 6527.273400000013, "used_retrieval": true, "num_source_docs": 5}

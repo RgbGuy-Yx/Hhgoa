@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -217,7 +218,7 @@ function ChatBubble({ msg }: { msg: Message }) {
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
+        className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
           isUser
             ? "rounded-br-sm bg-indigo-600 text-white"
             : msg.is_refusal
@@ -225,7 +226,13 @@ function ChatBubble({ msg }: { msg: Message }) {
             : "rounded-bl-sm bg-white text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100"
         }`}
       >
-        <p className="whitespace-pre-wrap">{msg.text}</p>
+        {isUser ? (
+          <p className="whitespace-pre-wrap">{msg.text}</p>
+        ) : (
+          <div className="space-y-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_h1]:text-lg [&_h1]:font-bold [&_h2]:text-base [&_h2]:font-bold [&_h3]:text-sm [&_h3]:font-bold [&_p]:mb-1.5 [&_li]:mb-0.5 [&_code]:bg-zinc-100 dark:[&_code]:bg-zinc-700/60 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_strong]:font-semibold">
+            <ReactMarkdown>{msg.text}</ReactMarkdown>
+          </div>
+        )}
         {!isUser && (
           <>
             <SourceBadges docs={msg.source_docs ?? []} />

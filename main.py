@@ -15,8 +15,9 @@ app = FastAPI(title="Hacker House Goa 2026 - Voice RAG")
 
 @app.on_event("startup")
 async def startup():
-    print("\n✅  HHGoa backend running at http://0.0.0.0:8000")
-    print("   Health check → http://localhost:8000/health\n")
+    port = os.getenv("PORT", "8000")
+    print(f"\n✅  HHGoa backend running — port {port}")
+    print(f"   Health check → http://0.0.0.0:{port}/health\n")
 
 app.add_middleware(
     CORSMiddleware,

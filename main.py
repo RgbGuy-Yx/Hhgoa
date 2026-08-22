@@ -27,8 +27,8 @@ app.add_middleware(
         "http://localhost:3001",
         "http://127.0.0.1:3001",
         # production custom domain
-        "https://ragproject.vijayguttula.me",
-        "http://ragproject.vijayguttula.me",   # in case HTTP redirect hasn't fired
+        "https://rag.vijayguttula.me",
+        "http://rag.vijayguttula.me",   # in case HTTP redirect hasn't fired
     ],
     allow_origin_regex=r"https://.*\.vercel\.app",   # covers all Vercel preview URLs
     allow_methods=["*"],
